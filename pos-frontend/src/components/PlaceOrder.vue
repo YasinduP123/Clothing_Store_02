@@ -623,73 +623,103 @@ onMounted(async () => {
             </div>
 
             <!-- Replace the existing search input with this new search section -->
-            <div class="relative w-full sm:w-auto">
-              <div class="flex gap-2 mb-2">
+            <div class="relative w-full sm:w-auto space-y-3">
+              <!-- Search Mode Tabs -->
+              <div class="flex p-1 bg-gray-800/50 rounded-lg shadow-inner">
                 <button 
                   @click="searchMode = 'manual'"
                   :class="[
-                    'px-3 py-1.5 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2',
+                    'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
                     searchMode === 'manual' 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg' 
+                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                   ]"
                 >
                   <Keyboard class="w-4 h-4" />
-                  <span>Manual</span>
+                  <span>Manual Search</span>
                 </button>
                 <button 
                   @click="searchMode = 'scanner'"
                   :class="[
-                    'px-3 py-1.5 rounded-lg text-sm transition-colors duration-200 flex items-center gap-2',
+                    'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2',
                     searchMode === 'scanner' 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-700'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg' 
+                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                   ]"
                 >
                   <Scan class="w-4 h-4" />
-                  <span>Scanner</span>
+                  <span>Barcode Scanner</span>
                 </button>
               </div>
 
+              <!-- Search Input Area -->
               <div class="relative">
                 <template v-if="searchMode === 'manual'">
-                  <input 
-                    type="text" 
-                    v-model="searchQuery" 
-                    placeholder="Search products by name or ID..."
-                    class="bg-[#1e293b] border border-[#334155] rounded-lg pl-10 pr-4 py-2.5 w-full sm:w-96 
-                           focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/30 text-white" 
-                  />
-                  <Keyboard class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <div class="relative group">
+                    <div class="absolute inset-0 bg-blue-500 rounded-lg blur opacity-30 group-hover:opacity-40 transition-opacity"></div>
+                    <div class="relative">
+                      <input 
+                        type="text" 
+                        v-model="searchQuery" 
+                        placeholder="Search by product name or ID..."
+                        class="w-full sm:w-96 px-12 py-3 bg-gray-800/90 border border-gray-700 rounded-lg
+                               focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500
+                               text-white placeholder-gray-400 transition-all duration-300" 
+                      />
+                      <Keyboard class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Search class="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    </div>
+                  </div>
                 </template>
                 
                 <template v-else>
-                  <div class="flex gap-2">
-                    <input 
-                      type="text" 
-                      v-model="barcodeInput"
-                      @keydown="handleBarcodeScanner"
-                      placeholder="Scan product barcode..."
-                      class="bg-[#1e293b] border-2 border-blue-500/30 rounded-lg pl-10 pr-4 py-2.5 w-full sm:w-96 
-                             focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/30 text-white"
-                      ref="barcodeInput"
-                      autocomplete="off"
-                    />
-                    <button 
-                      @click="testBarcodeScanner"
-                      class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center gap-2"
-                    >
-                      <Scan class="w-4 h-4" />
-                      Test Scan
-                    </button>
+                  <div class="space-y-3">
+                    <div class="relative group">
+                      <div class="absolute inset-0 bg-blue-500 rounded-lg blur opacity-30 group-hover:opacity-40 transition-opacity"></div>
+                      <div class="relative flex gap-2">
+                        <div class="flex-1 relative">
+                          <input 
+                            type="text" 
+                            v-model="barcodeInput"
+                            @keydown="handleBarcodeScanner"
+                            placeholder="Scan product barcode..."
+                            class="w-full px-12 py-3 bg-gray-800/90 border-2 border-blue-500/30 rounded-lg
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500
+                                   text-white placeholder-gray-400 transition-all duration-300"
+                            ref="barcodeInput"
+                            autocomplete="off"
+                          />
+                          <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                            <Scan class="w-5 h-5 text-blue-400 animate-pulse" />
+                          </div>
+                          <div class="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                          </div>
+                        </div>
+                        <button 
+                          @click="testBarcodeScanner"
+                          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg 
+                                 flex items-center gap-2 transition-all duration-300 hover:shadow-lg"
+                        >
+                          <Scan class="w-4 h-4" />
+                          Test
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Scanner Status Indicator -->
+                    <div class="flex items-center gap-3 px-4 py-2 bg-gray-800/50 rounded-lg border border-gray-700">
+                      <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                        <span class="text-sm text-gray-400">Scanner Active</span>
+                      </div>
+                      <div class="flex-1 h-1 bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full w-1/3 bg-blue-500 rounded-full animate-pulse"></div>
+                      </div>
+                      <span class="text-xs text-gray-500">Ready to scan</span>
+                    </div>
                   </div>
-                  <Scan class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-blue-400 animate-pulse" />
                 </template>
-              </div>
-              
-              <div v-if="searchMode === 'scanner'" class="mt-2 text-xs text-gray-400 flex items-center gap-2">
-                <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
-                Ready to scan barcodes
               </div>
             </div>
           </div>
