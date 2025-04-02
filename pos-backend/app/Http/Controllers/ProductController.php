@@ -21,7 +21,6 @@ class ProductController extends Controller
     {
         try {
             $products = Product::with('image')->get();
-            
             $products = $products->map(function ($product) {
                 $image_url = null;
                 if ($product->image) {
@@ -29,7 +28,6 @@ class ProductController extends Controller
                 }
                 return array_merge($product->toArray(), ['image_url' => $image_url]);
             });
-
             return $this->successResponse('Product retrieved successfully', $products);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
@@ -50,20 +48,12 @@ class ProductController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'supplier_id' => 'required|exists:suppliers,id',
-                'seller_price' => 'required|numeric|min:0',
-                'discount' => 'required|numeric|min:0',
-                'price' => 'required|numeric|min:0',
                 'brand_name' => 'required|string|max:255',
-                'size' => 'required|string',
-                'color' => 'string',
                 'category' => 'required|string',
-                'added_stock_amount' => 'required|integer',
                 'location' => 'string',
                 'status' => 'required|string',
-                'quantity' => 'required|integer',
                 'description' => 'required|string',
                 'admin_id' => 'required|exists:admins,id',
-                'bar_code' => 'string|nullable'  // Changed validation rule
             ]);
 
             if ($validator->fails()) {
@@ -72,45 +62,25 @@ class ProductController extends Controller
 
             DB::beginTransaction();
 
-            $profit = $request->price - $request->seller_price;
+            // $profit = $request->price - $request->seller_price;
 
             $productData = [
                 'name' => $request->name,
                 'price' => $request->price,
-                'seller_price' => $request->seller_price,
-                'profit' => $profit,
-                'discount' => $request->discount ?? 0,
-                'size' => $request->size,
-                'color' => $request->color,
                 'category' => $request->category,
                 'description' => $request->description,
                 'brand_name' => $request->brand_name,
                 'location' => $request->location,
                 'status' => $request->status,
-                'quantity' => $request->quantity,
                 'supplier_id' => $request->supplier_id,
                 'admin_id' => $request->admin_id,
-                'added_stock_amount' => $request->added_stock_amount,
-                'bar_code' => $request->bar_code  // Explicitly include bar_code
             ];
 
             $product = Product::create($productData);
 
-            // Load supplier details
             $supplier = \App\Models\Supplier::find($request->supplier_id);
 
-            // Generate GRN number
-            $grnNumber = 'GRN-' . date('Y') . '-' . str_pad($product->id, 5, '0', STR_PAD_LEFT);
-
-            // Create GRN Note with more detailed information
-            $grnNote = $this->createGRNNote($product, [
-                'grn_number' => $grnNumber,
-                'quantity' => $request->quantity
-            ]);
-
-            // Load relationships for complete data
             $product->load(['supplier']);
-            $grnNote->load(['supplier', 'admin']);
 
             SupplierProduct::create([
                 'product_id' => $product->id,
@@ -130,13 +100,10 @@ class ProductController extends Controller
                     ]
                 ]),
                 'grn' => [
-                    'number' => $grnNumber,
-                    'details' => $grnNote,
                     'supplier' => $supplier,
                     'received_date' => now()->format('Y-m-d')
                 ]
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Product creation failed: ' . $e->getMessage());
@@ -148,17 +115,14 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($id);
-            
+
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
-                'price' => 'required|numeric|min:0',
-                'seller_price' => 'required|numeric|min:0',
                 'discount' => 'required|numeric|min:0',
                 'size' => 'required|string|max:255',
                 'color' => 'required|string|max:255',
                 'description' => 'required|string',
                 'category' => 'required|string|max:255',
-                'quantity' => 'required|integer|min:0',
                 'location' => 'nullable|string|max:255',
                 'status' => 'required|string|max:255',
                 'brand_name' => 'required|string|max:255',
@@ -178,22 +142,15 @@ class ProductController extends Controller
             // Update product
             $product->update([
                 'name' => $request->name,
-                'price' => $request->price,
-                'seller_price' => $request->seller_price,
-                'profit' => $profit,
-                'discount' => $request->discount,
                 'size' => $request->size,
                 'color' => $request->color,
                 'description' => $request->description,
                 'category' => $request->category,
-                'quantity' => $request->quantity,
                 'location' => $request->location,
                 'status' => $request->status,
                 'brand_name' => $request->brand_name,
                 'supplier_id' => $request->supplier_id,
                 'admin_id' => $request->admin_id,
-                'added_stock_amount' => $request->added_stock_amount,
-                'bar_code' => $request->bar_code  // Added bar_code to update
             ]);
 
             return $this->successResponse('Product updated successfully', $product);
@@ -220,11 +177,11 @@ class ProductController extends Controller
     public function getByInventoryId($inventoryId)
     {
         try {
-            $product = Product::with(['supplier' => function($query) {
+            $product = Product::with(['supplier' => function ($query) {
                 $query->select('id', 'name', 'email', 'contact'); // Add any other supplier fields you need
             }])
-            ->where('inventory_id', $inventoryId)
-            ->firstOrFail();
+                ->where('inventory_id', $inventoryId)
+                ->firstOrFail();
 
             // Format the product data with supplier details
             $formattedProduct = array_merge($product->toArray(), [
@@ -253,7 +210,7 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($id);
-            
+
             $request->validate([
                 'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
@@ -305,35 +262,4 @@ class ProductController extends Controller
         ], $code);
     }
 
-    protected function createGRNNote($product, $data)
-    {
-        try {
-            return GRNNote::create([
-                'grn_number' => $data['grn_number'],
-                'product_id' => $product->id,
-                'supplier_id' => $product->supplier_id,
-                'admin_id' => $product->admin_id,
-                'price' => $product->price,
-                'product_details' => [
-                    'name' => $product->name,
-                    'description' => $product->description,
-                    'brand_name' => $product->brand_name,
-                    'size' => $product->size,
-                    'color' => $product->color,
-                    'category' => $product->category,
-                    'quantity' => $product->quantity,
-                    'bar_code' => $product->bar_code,
-                    'location' => $product->location
-                ],
-                'received_date' => now(),
-                'previous_quantity' => $product->quantity - $data['quantity'], // Add previous quantity
-                'new_quantity' => $product->quantity,                         // Add new quantity
-                'adjusted_quantity' => $data['quantity'],                     // Add adjusted quantity
-                'adjustment_type' => 'addition'                               // Add adjustment type
-            ]);
-        } catch (\Exception $e) {
-            Log::error('GRN Note creation failed: ' . $e->getMessage());
-            throw $e;
-        }
-    }
 }

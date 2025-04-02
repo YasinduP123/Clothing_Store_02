@@ -21,9 +21,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\LoanController;
-
-
-
+use App\Http\Controllers\ProductVariationController;
 
 // Cashier Routes
 Route::prefix('cashiers')->group(function () {
@@ -187,3 +185,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/assets/{id}', [AssetController::class, 'update']);
     Route::delete('/assets/{id}', [AssetController::class, 'destroy']);
 });
+
+// Product Variations
+
+Route::get('/product/variations', [ProductVariationController::class, 'index']);
+Route::post('/product/variations', [ProductVariationController::class, 'store']);
+Route::get('/product/variations/{id}', [ProductVariationController::class, 'show']);
+Route::put('/product/variations/{id}', [ProductVariationController::class, 'update']);
+Route::delete('/product/variations/{id}', [ProductVariationController::class, 'destroy']);
+Route::get('/product/variations/product/{id}', [ProductVariationController::class, 'showByProduct']);
+Route::get('/product/variations/barcode/{barcode}', [ProductVariationController::class, 'showByBarcode']);

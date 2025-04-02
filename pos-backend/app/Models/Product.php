@@ -9,22 +9,13 @@ class Product extends Model
 {
     protected $fillable = [
         'name',
-        'price',
-        'seller_price',
-        'profit',
-        'discount',
-        'size',
-        'color',
         'category',
         'description',
         'brand_name',
-        'quantity',
         'location',
         'status',
-        'added_stock_amount',
         'supplier_id',
-        'admin_id',
-        'bar_code'
+        'admin_id'
     ];
 
     protected $casts = [
@@ -35,8 +26,7 @@ class Product extends Model
         'quantity' => 'integer',
         'added_stock_amount' => 'integer',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'bar_code' => 'string'
+        'updated_at' => 'datetime'
     ];
 
     public function admin(): BelongsTo

@@ -13,14 +13,14 @@ class CashierController extends Controller
     public function index()
     {
         $cashiers = Cashier::all();
-        $data = $cashiers->map(function($cashier) {
+        $data = $cashiers->map(function ($cashier) {
             return [
                 'id' => $cashier->id,
                 'name' => $cashier->name,
                 'email' => $cashier->email,
                 'password' => $cashier->password,
-                'image_url' => $cashier->image_path 
-                    ? url('storage/' . $cashier->image_path) 
+                'image_url' => $cashier->image_path
+                    ? url('storage/' . $cashier->image_path)
                     : null
             ];
         });
@@ -52,12 +52,12 @@ class CashierController extends Controller
             }
 
             $createdCashier = Cashier::create($validatedAttributes);
-            
+
             $responseData = [
                 'id' => $createdCashier->id,
                 'name' => $createdCashier->name,
                 'email' => $createdCashier->email,
-                'image_url' => $createdCashier->image_path 
+                'image_url' => $createdCashier->image_path
                     ? url('storage/' . $createdCashier->image_path)
                     : null
             ];
@@ -66,7 +66,6 @@ class CashierController extends Controller
                 'message' => 'Successfully Created a new Cashier',
                 'data' => $responseData
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',

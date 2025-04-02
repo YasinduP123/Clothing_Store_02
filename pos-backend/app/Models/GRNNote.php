@@ -14,12 +14,13 @@ class GRNNote extends Model
         'supplier_id',
         'admin_id',
         'price',
-        'product_details',
+        'name',
+        'description',
+        'brand_name',
+        'size',
+        'color',
+        'bar_code',
         'received_date',
-        'previous_quantity',
-        'new_quantity',
-        'adjusted_quantity',
-        'adjustment_type'
     ];
 
     protected $casts = [

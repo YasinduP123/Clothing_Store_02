@@ -14,7 +14,12 @@ class GRNNoteController extends Controller
     public function index()
     {
         $grnNotes = GRNNote::with(['supplier', 'product', 'admin'])->get();
-        return response()->json(['status' => 'success', 'data' => $grnNotes]);
+
+        // Return the GRN Notes with all attributes
+        return response()->json([
+            'status' => 'success',
+            'data' => $grnNotes
+        ]);
     }
 
     public function store(Request $request)
@@ -50,17 +55,14 @@ class GRNNoteController extends Controller
                 'color' => '',
                 'bar_code' => '',
             ], $validatedData['product_details']);
-
             // Create GRN Note
             $grnNote = GRNNote::create($validatedData);
-
             DB::commit();
             return response()->json([
                 'status' => 'success',
                 'message' => 'GRN Note created successfully',
                 'data' => $grnNote
             ], 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             Log::error('GRN Validation failed: ' . json_encode($e->errors()));
@@ -77,12 +79,16 @@ class GRNNoteController extends Controller
             ], 500);
         }
     }
-
     public function show($id)
     {
         try {
             $grnNote = GRNNote::with(['supplier', 'product', 'admin'])->findOrFail($id);
-            return response()->json(['status' => 'success', 'data' => $grnNote]);
+
+            // Return the GRN Note with all attributes
+            return response()->json([
+                'status' => 'success',
+                'data' => $grnNote
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
